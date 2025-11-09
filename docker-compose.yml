@@ -16,9 +16,10 @@ services:
       - mongo
     environment:
       - PORT=5000
-      - JWT_SECRET=${JWT_SECRET:-Singh@2005}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1d}
-      - MONGO_URI=mongodb://mongo:27017/fs_project
+      - JWT_SECRET=Ujjwal@2004
+      - JWT_EXPIRES_IN=1d
+      - MONGO_URI=mongodb+srv://pathakujjwal0001_db_user:15djsYL0xipygKyM@cluster0.vpuejma.mongodb.net/fs_project?appName=Cluster0
+      - TENANT_ROOT_DOMAIN=example.com
     ports:
       - "5000:5000"
     volumes:

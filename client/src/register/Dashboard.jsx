@@ -15,7 +15,14 @@ const Dashboard = () => {
   const token = useMemo(() => localStorage.getItem("token"), []);
   const storedUser = useMemo(() => {
     const raw = localStorage.getItem("user");
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch (parseError) {
+      console.error("Failed to parse stored user:", parseError);
+      localStorage.removeItem("user");
+      return null;
+    }
   }, []);
 
   const ensureAuth = () => {
@@ -126,7 +133,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between gap-6">
               <span className="text-[color:var(--color-muted)]">Workspace</span>
               <span className="font-semibold text-[color:var(--color-primary)]">
-                {activeUser?.tenantId || "—"}
+                {activeUser?.tenantId || "unknown workspace"}
               </span>
             </div>
             <div className="flex items-center justify-between gap-6">
