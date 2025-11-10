@@ -20,19 +20,37 @@
 body {
   min-height: 100vh;
   margin: 0;
-  background: var(--color-background);
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(59,130,246,0.08), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(147,197,253,0.12), transparent 55%),
+    var(--color-background);
   color: var(--color-text);
   line-height: 1.6;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
 #root {
   min-height: 100vh;
 }
 
-a {
+a:not(.button-link) {
   color: var(--color-accent);
 }
 
 button {
   font-family: inherit;
+}
+
+/* Smoothen color transitions for components */
+.ui-surface {
+  background: var(--color-surface);
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+
+.ui-border {
+  border-color: rgba(203, 213, 225, 0.7);
+}
+
+.ui-glow:hover {
+  box-shadow: 0 6px 18px rgba(59,130,246,0.15);
 }

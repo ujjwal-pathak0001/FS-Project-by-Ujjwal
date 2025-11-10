@@ -4,6 +4,7 @@ export const authRoutes = {
   register: `${API_BASE_URL}/api/user/register`,
   login: `${API_BASE_URL}/api/user/login`,
   tenantProfile: `${API_BASE_URL}/api/user/tenant/profile`,
+  setRole: `${API_BASE_URL}/api/user/role`,
 };
 
 export const postsRoute = (tenantId) => `${API_BASE_URL}/api/tenants/${tenantId}/posts`;

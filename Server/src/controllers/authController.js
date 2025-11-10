@@ -53,7 +53,7 @@ const defaultTenantThemes = {
 };
 
 const generateToken = (user) =>
-  jwt.sign({ id: user._id, tenantId: user.tenantId }, process.env.JWT_SECRET, {
+  jwt.sign({ id: user._id, tenantId: user.tenantId, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 
@@ -78,6 +78,9 @@ const sanitizeUser = (userDoc) => {
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password, tenantId } = req.body;
+    const requestRole = req.body?.role;
+    const allowRoleOnRegister = String(process.env.ALLOW_ROLE_ON_REGISTER).toLowerCase() === "true";
+    const allowedRoles = ["admin", "editor", "viewer"];
 
     if (!tenantId) {
       return res.status(400).json({ message: "tenantId is required" });
@@ -89,7 +92,13 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists for this tenant" });
     }
 
-    const newUser = await User.create({ name, email, password, tenantId: tenant.tenantId });
+    const newUser = await User.create({
+      name,
+      email,
+      password,
+      tenantId: tenant.tenantId,
+      role: allowRoleOnRegister && allowedRoles.includes(requestRole) ? requestRole : "viewer",
+    });
     const token = generateToken(newUser);
 
     res.status(201).json({ user: sanitizeUser(newUser), tenant, token });

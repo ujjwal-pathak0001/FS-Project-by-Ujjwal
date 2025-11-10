@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import Register from "./register/Register";
 import Login from "./register/Login";
 import Dashboard from "./register/Dashboard";
-import { applyTheme, clearStoredTheme, getStoredTheme } from "./utils/theme.js";
+import { applyTheme, clearStoredTheme, getStoredTheme, getThemeMode, toggleThemeMode, themes, setThemeMode } from "./utils/theme.js";
 
 const NavigationBar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [mode, setMode] = useState(getThemeMode());
 
   useEffect(() => {
     const evaluateAuthState = () => {
@@ -18,6 +19,11 @@ const NavigationBar = () => {
     return () => window.removeEventListener("storage", evaluateAuthState);
   }, []);
 
+  useEffect(() => {
+    // Initialize theme based on stored mode
+    setThemeMode(mode);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -25,22 +31,43 @@ const NavigationBar = () => {
     window.location.href = "/login";
   };
 
+  const handleToggleTheme = () => {
+    const next = toggleThemeMode();
+    setMode(next);
+    // Persist a sample palette per mode for nicer demo contrast
+    const palette = next === "dark" ? themes.dark : themes.light;
+    localStorage.setItem("tenantTheme", JSON.stringify(palette));
+  };
+
   return (
-    <header className="border-b border-slate-200/70 bg-[color:var(--color-surface)]">
+    <header className="border-b border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)]/95 backdrop-blur supports-[backdrop-filter]:bg-[color:var(--color-surface)]/80">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <span />
+        <Link to={isAuthenticated ? "/dashboard" : "/"} className="group inline-flex items-center gap-3">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-[color:var(--color-accent)] text-white shadow-sm transition group-hover:brightness-105">
+            MW
+          </span>
+          <span className="text-sm font-semibold text-[color:var(--color-primary)]">Multi-tenant Workspace</span>
+        </Link>
         <nav className="flex items-center gap-3 text-sm font-medium text-[color:var(--color-muted)]">
+          <button
+            onClick={handleToggleTheme}
+            aria-label="Toggle theme"
+            className="rounded-full border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-3 py-2 text-[color:var(--color-text)] shadow-sm transition hover:border-[color:var(--color-muted)]/40 hover:bg-[color:var(--color-surface)]/90"
+            title={mode === "dark" ? "Switch to light" : "Switch to dark"}
+          >
+            {mode === "dark" ? "Light" : "Dark"}
+          </button>
           {isAuthenticated ? (
             <>
               <Link
                 to="/dashboard"
-                className="rounded-full px-3 py-2 transition hover:bg-slate-100 hover:text-[color:var(--color-text)]"
+                className="rounded-full px-3 py-2 transition hover:bg-[color:var(--color-surface)]/80 hover:text-[color:var(--color-text)]"
               >
                 Dashboard
               </Link>
               <button
                 onClick={handleLogout}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 font-semibold text-[color:var(--color-text)] shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                className="rounded-full border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-4 py-2 font-semibold text-[color:var(--color-text)] shadow-sm transition hover:border-[color:var(--color-muted)]/40 hover:bg-[color:var(--color-surface)]/90"
               >
                 Sign out
               </button>
@@ -49,7 +76,7 @@ const NavigationBar = () => {
             <>
               <Link
                 to="/login"
-                className="rounded-full px-3 py-2 transition hover:bg-slate-100 hover:text-[color:var(--color-text)]"
+                className="rounded-full px-3 py-2 transition hover:bg-[color:var(--color-surface)]/80 hover:text-[color:var(--color-text)]"
               >
                 Login
               </Link>
@@ -90,7 +117,7 @@ function App() {
             </Routes>
           </div>
         </main>
-        <footer className="border-t border-slate-200/70 bg-[color:var(--color-surface)]">
+        <footer className="border-t border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)]">
           <div className="mx-auto max-w-5xl px-4 py-4 text-center text-xs text-[color:var(--color-muted)]">
             Built for the Nimbus challenge - Multi-tenant demo workspace
           </div>

@@ -48,9 +48,9 @@ function Login() {
   };
 
   return (
-    <div className="grid gap-10 rounded-3xl border border-slate-200/70 bg-[color:var(--color-surface)] p-8 shadow-sm shadow-slate-200/80 lg:grid-cols-[1.05fr,1fr] lg:p-12">
+    <div className="grid gap-10 rounded-3xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] p-8 shadow-sm shadow-slate-200/80 lg:grid-cols-[1.05fr,1fr] lg:p-12 ui-surface ui-border">
       <section className="space-y-6">
-        <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--color-muted)]">
+        <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--color-muted)]">
           Welcome back
         </span>
         <h1 className="text-3xl font-semibold text-[color:var(--color-primary)] sm:text-4xl">
@@ -61,13 +61,13 @@ function Login() {
           prototyping or create a new one from the register page.
         </p>
         <ul className="grid gap-3 text-sm text-[color:var(--color-text)] sm:grid-cols-2">
-          <li className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+          <li className="rounded-2xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-4 py-3">
             <span className="block text-xs uppercase tracking-[0.2em] text-[color:var(--color-muted)]">
               Tip
             </span>
             Keep a note of which tenantId you register with.
           </li>
-          <li className="rounded-2xl border border-slate-200 bg-white px-4 py-3">
+          <li className="rounded-2xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-4 py-3">
             <span className="block text-xs uppercase tracking-[0.2em] text-[color:var(--color-muted)]">
               Theme
             </span>
@@ -77,7 +77,7 @@ function Login() {
       </section>
 
       <form
-        className="flex w-full flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-inner"
+        className="flex w-full flex-col gap-4 rounded-2xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] p-6 shadow-inner ui-surface ui-border"
         onSubmit={handleSubmit}
       >
         <div>
@@ -99,7 +99,7 @@ function Login() {
         <label className="space-y-1 text-sm">
           <span className="font-medium text-[color:var(--color-text)]">Email</span>
           <input
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-base text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
+            className="w-full rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-3 py-2 text-base text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
             type="email"
             name="email"
             value={formData.email}
@@ -112,7 +112,7 @@ function Login() {
         <label className="space-y-1 text-sm">
           <span className="font-medium text-[color:var(--color-text)]">Password</span>
           <input
-            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-base text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
+            className="w-full rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-3 py-2 text-base text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
             type="password"
             name="password"
             value={formData.password}
@@ -128,7 +128,7 @@ function Login() {
             name="tenantId"
             value={formData.tenantId}
             onChange={handleChange}
-            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-base text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
+            className="w-full rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-3 py-2 text-base text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
           >
             {tenantOptions.map((tenant) => (
               <option key={tenant.id} value={tenant.id}>
@@ -141,7 +141,7 @@ function Login() {
         <button
           type="submit"
           disabled={loading}
-          className="mt-2 rounded-xl bg-[color:var(--color-accent)] py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+          className="mt-2 rounded-xl bg-[color:var(--color-accent)] py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70 ui-glow"
         >
           {loading ? "Signing you in..." : "Access dashboard"}
         </button>

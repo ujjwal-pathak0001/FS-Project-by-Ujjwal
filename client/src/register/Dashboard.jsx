@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { postsRoute } from "../utils/api.js";
+import { postsRoute, authRoutes } from "../utils/api.js";
 
 const emptyPostState = { title: "", description: "" };
 
@@ -11,6 +11,12 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [activeUser, setActiveUser] = useState(null);
+  const userRole = useMemo(() => activeUser?.role || null, [activeUser]);
+  const canCreate = useMemo(() => userRole === "editor" || userRole === "admin", [userRole]);
+  const canDelete = useMemo(() => userRole === "admin", [userRole]);
+  const isAdmin = useMemo(() => userRole === "admin", [userRole]);
+  const [roleForm, setRoleForm] = useState({ email: "", role: "viewer" });
+  const [roleMsg, setRoleMsg] = useState(null);
 
   const token = useMemo(() => localStorage.getItem("token"), []);
   const storedUser = useMemo(() => {
@@ -113,9 +119,43 @@ const Dashboard = () => {
     }
   };
 
+  const handleSetRole = async (e) => {
+    e.preventDefault();
+    if (!ensureAuth() || !isAdmin) return;
+    setRoleMsg(null);
+    try {
+      const { data } = await axios.put(
+        authRoutes.setRole,
+        { email: roleForm.email, role: roleForm.role },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setRoleMsg({
+        type: "success",
+        text:
+          data?.user?.email === activeUser?.email
+            ? "Role updated. Please log out and log back in to refresh permissions."
+            : `Updated ${data?.user?.email} to ${data?.user?.role}.`,
+      });
+      if (data?.user && data.user.email === activeUser?.email) {
+        const updated = { ...activeUser, role: data.user.role };
+        localStorage.setItem("user", JSON.stringify(updated));
+        setActiveUser(updated);
+      }
+    } catch (err) {
+      setRoleMsg({
+        type: "error",
+        text: err.response?.data?.message || "Failed to update role",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border border-slate-200/70 bg-[color:var(--color-surface)] p-6 shadow-sm shadow-slate-200/70 sm:p-8">
+      <section className="rounded-2xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] p-6 shadow-sm shadow-slate-200/70 sm:p-8 ui-surface ui-border">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-3">
             <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--color-muted)]">
@@ -129,7 +169,7 @@ const Dashboard = () => {
               <strong>{activeUser?.tenantId || "your workspace"}</strong>.
             </p>
           </div>
-          <div className="grid gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 text-sm text-[color:var(--color-text)]">
+          <div className="grid gap-3 rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-5 py-4 text-sm text-[color:var(--color-text)]">
             <div className="flex items-center justify-between gap-6">
               <span className="text-[color:var(--color-muted)]">Workspace</span>
               <span className="font-semibold text-[color:var(--color-primary)]">
@@ -147,7 +187,7 @@ const Dashboard = () => {
       <section className="grid gap-6 lg:grid-cols-[minmax(0,320px),1fr]">
         <form
           onSubmit={handleAddPost}
-          className="flex flex-col gap-4 rounded-2xl border border-slate-200/70 bg-[color:var(--color-surface)] p-6 shadow-sm shadow-slate-200/70"
+          className="flex flex-col gap-4 rounded-2xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] p-6 shadow-sm shadow-slate-200/70 ui-surface ui-border"
         >
           <div>
             <h2 className="text-lg font-semibold text-[color:var(--color-primary)]">
@@ -157,6 +197,11 @@ const Dashboard = () => {
               Keep it short and focused on this tenant.
             </p>
           </div>
+          {!canCreate && (
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              You need the Editor role to create posts.
+            </p>
+          )}
           <label className="space-y-1 text-sm">
             <span className="font-medium text-[color:var(--color-text)]">Title</span>
             <input
@@ -165,8 +210,9 @@ const Dashboard = () => {
               value={formData.title}
               onChange={handleChange}
               placeholder="Sprint retrospective notes"
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
+              className="w-full rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-3 py-2 text-sm text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
               required
+              disabled={!canCreate}
             />
           </label>
           <label className="space-y-1 text-sm">
@@ -177,20 +223,21 @@ const Dashboard = () => {
               onChange={handleChange}
               placeholder="Share upcoming work or quick announcements..."
               rows={5}
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
+              className="w-full rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-3 py-2 text-sm text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
               required
+              disabled={!canCreate}
             />
           </label>
           <button
             type="submit"
-            disabled={loading}
-            className="rounded-xl bg-[color:var(--color-accent)] py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70"
+            disabled={loading || !canCreate}
+            className="rounded-xl bg-[color:var(--color-accent)] py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70 ui-glow"
           >
             {loading ? "Saving..." : "Post update"}
           </button>
         </form>
 
-        <div className="space-y-4 rounded-2xl border border-slate-200/70 bg-[color:var(--color-surface)] p-6 shadow-sm shadow-slate-200/70">
+        <div className="space-y-4 rounded-2xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] p-6 shadow-sm shadow-slate-200/70 ui-surface ui-border">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-[color:var(--color-primary)]">
               Recent posts
@@ -203,10 +250,10 @@ const Dashboard = () => {
           {isFetching ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, idx) => (
-                <div key={idx} className="animate-pulse rounded-xl border border-slate-200 bg-white p-4">
-                  <div className="h-4 w-3/4 rounded bg-slate-200" />
-                  <div className="mt-2 h-3 w-full rounded bg-slate-200/80" />
-                  <div className="mt-2 h-3 w-2/3 rounded bg-slate-200/80" />
+                <div key={idx} className="animate-pulse rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] p-4">
+                  <div className="h-4 w-3/4 rounded bg-[color:var(--color-muted)]/20" />
+                  <div className="mt-2 h-3 w-full rounded bg-[color:var(--color-muted)]/20" />
+                  <div className="mt-2 h-3 w-2/3 rounded bg-[color:var(--color-muted)]/20" />
                 </div>
               ))}
             </div>
@@ -219,7 +266,7 @@ const Dashboard = () => {
               {posts.map((item) => (
                 <article
                   key={item._id}
-                  className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                  className="rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] p-4 shadow-sm ui-surface ui-border"
                 >
                   <header className="flex items-start justify-between gap-4">
                     <div>
@@ -230,23 +277,74 @@ const Dashboard = () => {
                         {item.description}
                       </p>
                     </div>
-                    <button
-                      onClick={() => handleDelete(item._id)}
-                      className="rounded-full border border-rose-200 px-3 py-1 text-xs font-medium text-rose-600 transition hover:bg-rose-50"
-                    >
-                      Delete
-                    </button>
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="rounded-full border border-rose-200 px-3 py-1 text-xs font-medium text-rose-600 transition hover:bg-rose-50"
+                      >
+                        Delete
+                      </button>
+                    )}
                   </header>
                 </article>
               ))}
             </div>
           ) : (
-            <p className="rounded-xl border border-slate-200 bg-white px-3 py-6 text-center text-sm text-[color:var(--color-muted)]">
+            <p className="rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-3 py-6 text-center text-sm text-[color:var(--color-muted)]">
               No posts yet. Use the form to share the first update for this tenant.
             </p>
           )}
         </div>
       </section>
+
+      {isAdmin && (
+        <section className="rounded-2xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] p-6 shadow-sm ui-surface ui-border">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-[color:var(--color-primary)]">
+              Admin: Set user role (tenant-scoped)
+            </h2>
+            <span className="text-xs uppercase tracking-[0.2em] text-[color:var(--color-muted)]">
+              {activeUser?.tenantId}
+            </span>
+          </div>
+          {roleMsg && (
+            <p
+              className={`mb-3 rounded-xl border px-3 py-2 text-sm ${
+                roleMsg.type === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-rose-200 bg-rose-50 text-rose-700"
+              }`}
+            >
+              {roleMsg.text}
+            </p>
+          )}
+          <form onSubmit={handleSetRole} className="grid gap-3 sm:grid-cols-[1fr,160px,auto]">
+            <input
+              type="email"
+              placeholder="user@company.com"
+              value={roleForm.email}
+              onChange={(e) => setRoleForm((p) => ({ ...p, email: e.target.value }))}
+              className="w-full rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-3 py-2 text-sm text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
+              required
+            />
+            <select
+              value={roleForm.role}
+              onChange={(e) => setRoleForm((p) => ({ ...p, role: e.target.value }))}
+              className="rounded-xl border border-[color:var(--color-muted)]/30 bg-[color:var(--color-surface)] px-3 py-2 text-sm text-[color:var(--color-text)] focus:border-[color:var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[color:var(--color-accent)]/30"
+            >
+              <option value="viewer">viewer</option>
+              <option value="editor">editor</option>
+              <option value="admin">admin</option>
+            </select>
+            <button
+              type="submit"
+              className="rounded-xl bg-[color:var(--color-accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 ui-glow"
+            >
+              Update role
+            </button>
+          </form>
+        </section>
+      )}
     </div>
   );
 };
