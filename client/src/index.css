@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --color-background: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-primary: #1f3d7a;
+  --color-accent: #3b82f6;
+  --color-text: #1f2933;
+  --color-muted: #64748b;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(59,130,246,0.08), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(147,197,253,0.12), transparent 55%),
+    var(--color-background);
+  color: var(--color-text);
+  line-height: 1.6;
+  transition: background-color 200ms ease, color 200ms ease;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a:not(.button-link) {
+  color: var(--color-accent);
+}
+
+button {
+  font-family: inherit;
+}
+
+/* Smoothen color transitions for components */
+.ui-surface {
+  background: var(--color-surface);
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+
+.ui-border {
+  border-color: rgba(203, 213, 225, 0.7);
+}
+
+.ui-glow:hover {
+  box-shadow: 0 6px 18px rgba(59,130,246,0.15);
+}
